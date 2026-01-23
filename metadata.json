@@ -1,0 +1,7 @@
+{
+  "name": "ConnectID - Digital Business Cards",
+  "description": "A professional platform for creating, managing, and sharing interactive digital business cards with QR code generation and real-time analytics.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

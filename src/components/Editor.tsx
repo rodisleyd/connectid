@@ -8,8 +8,6 @@ import { Wand2, Sparkles, Plus, Trash2, Save, ArrowLeft, Loader2, Eye, Smartphon
 import CardPreview from './CardPreview';
 import { Device } from '../types';
 import { DEVICES } from '../constants';
-import { storage } from '../lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 interface EditorProps {
   card: BusinessCard;
@@ -70,26 +68,60 @@ const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selec
     setIsGenerating(false);
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  /* 
+   * FALLBACK TO BASE64 (NO FIREBASE STORAGE NEEDED)
+   * Why: User is having issues configuring Firebase Storage on Spark Plan.
+   * Solution: Compress image and save as string in Firestore. Reliable and Free.
+   */
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert("A imagem deve ter no máximo 2MB.");
+      if (file.size > 5 * 1024 * 1024) {
+        alert("A imagem é muito grande. Tente uma menor que 5MB.");
         return;
       }
 
       setIsUploading(true);
-      try {
-        const storageRef = ref(storage, `avatars/${card.id}/${Date.now()}_${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        onUpdate({ ...card, avatar: downloadURL });
-      } catch (error) {
-        console.error("Erro ao fazer upload:", error);
-        alert("Erro ao enviar imagem. Tente novamente.");
-      } finally {
-        setIsUploading(false);
-      }
+      const reader = new FileReader();
+
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          // Resize image using canvas to reduce size
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+
+          // Max dimensions
+          const MAX_WIDTH = 300;
+          const MAX_HEIGHT = 300;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          // Get compressed Base64
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+          onUpdate({ ...card, avatar: compressedBase64 });
+          setIsUploading(false);
+        };
+        img.src = event.target?.result as string;
+      };
+
+      reader.readAsDataURL(file);
     }
   };
 

@@ -4,6 +4,7 @@ import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AppLayout from './pages/AppLayout';
+import PublicCardPage from './pages/PublicCardPage';
 
 // Mock Auth Protection for now (Will integrate Firebase Auth state later)
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -19,6 +20,7 @@ const App: React.FC = () => {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/card/:id" element={<PublicCardPage />} />
                 <Route
                     path="/app"
                     element={

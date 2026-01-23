@@ -335,7 +335,7 @@ const AppLayout: React.FC = () => {
               <div className="p-4 bg-white border border-slate-100 rounded-3xl shadow-lg">
                 <QRCodeCanvas
                   ref={qrRef}
-                  value={`https://connectid.me/${currentCard.id}`}
+                  value={`${window.location.origin}/card/${currentCard.id}`}
                   size={200}
                   level={"H"}
                   includeMargin={true}
@@ -352,9 +352,9 @@ const AppLayout: React.FC = () => {
 
               <div className="w-full space-y-3">
                 <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
-                  <span className="flex-1 text-xs font-medium text-slate-500 truncate">connectid.me/{currentCard.id}</span>
+                  <span className="flex-1 text-xs font-medium text-slate-500 truncate">{window.location.host}/card/{currentCard.id}</span>
                   <button
-                    onClick={() => copyToClipboard(`https://connectid.me/${currentCard.id}`)}
+                    onClick={() => copyToClipboard(`${window.location.origin}/card/${currentCard.id}`)}
                     className="text-indigo-600 text-xs font-bold hover:underline px-3"
                   >
                     COPIAR
@@ -375,10 +375,10 @@ const AppLayout: React.FC = () => {
                         navigator.share({
                           title: `Cartão de Visita - ${currentCard.name}`,
                           text: `Confira meu cartão de visita digital!`,
-                          url: `https://connectid.me/${currentCard.id}`,
+                          url: `${window.location.origin}/card/${currentCard.id}`,
                         }).catch(console.error);
                       } else {
-                        copyToClipboard(`https://connectid.me/${currentCard.id}`);
+                        copyToClipboard(`${window.location.origin}/card/${currentCard.id}`);
                       }
                     }}
                     className="flex items-center justify-center gap-2 p-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-colors"

@@ -8,6 +8,8 @@ import { Wand2, Sparkles, Plus, Trash2, Save, ArrowLeft, Loader2, Eye, Smartphon
 import CardPreview from './CardPreview';
 import { Device } from '../types';
 import { DEVICES } from '../constants';
+import { storage } from '../lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 interface EditorProps {
   card: BusinessCard;
@@ -22,6 +24,7 @@ interface EditorProps {
 const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selectedDevice, onSelectDevice, planFeatures }) => {
   const [activeTab, setActiveTab] = useState<'info' | 'design' | 'links' | 'preview'>('info');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -67,14 +70,26 @@ const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selec
     setIsGenerating(false);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onUpdate({ ...card, avatar: reader.result as string });
-      };
-      reader.readAsDataURL(file);
+      if (file.size > 2 * 1024 * 1024) {
+        alert("A imagem deve ter no máximo 2MB.");
+        return;
+      }
+
+      setIsUploading(true);
+      try {
+        const storageRef = ref(storage, `avatars/${card.id}/${Date.now()}_${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        onUpdate({ ...card, avatar: downloadURL });
+      } catch (error) {
+        console.error("Erro ao fazer upload:", error);
+        alert("Erro ao enviar imagem. Tente novamente.");
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -165,8 +180,8 @@ const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selec
                 htmlFor="avatar-upload"
                 className="flex items-center justify-center gap-2 w-full p-3 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400 font-medium text-xs uppercase tracking-wide"
               >
-                <Upload size={16} />
-                Carregar imagem do computador
+                {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                {isUploading ? 'Enviando...' : 'Carregar imagem do computador'}
               </label>
             </div>
 

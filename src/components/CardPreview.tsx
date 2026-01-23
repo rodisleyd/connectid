@@ -10,41 +10,7 @@ interface CardPreviewProps {
   device?: Device;
 }
 
-const OptimizedImage: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [error, setError] = useState(false);
 
-  // Reset states when src changes
-  useEffect(() => {
-    setIsLoaded(false);
-    setError(false);
-  }, [src]);
-
-  return (
-    <div className={`relative w-full h-full bg-slate-100 flex items-center justify-center overflow-hidden ${className}`}>
-      {!isLoaded && !error && (
-        <div className="absolute inset-0 bg-slate-200 animate-pulse flex items-center justify-center">
-          <User className="text-slate-400" size={40} />
-        </div>
-      )}
-      {error ? (
-        <div className="flex items-center justify-center w-full h-full bg-slate-200 text-slate-400">
-          <User size={40} />
-        </div>
-      ) : (
-        <img
-          src={src}
-          alt={alt}
-          loading="lazy"
-          decoding="async"
-          onLoad={() => setIsLoaded(true)}
-          onError={() => setError(true)}
-          className={`w-full h-full object-cover transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-        />
-      )}
-    </div>
-  );
-};
 
 const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = false, device }) => {
   const { template, style, name, role, company, bio, avatar, phone, email, website, address, socialLinks, whatsapp } = card;
@@ -77,8 +43,12 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = fa
           style={{ backgroundColor: style.primaryColor }}
         >
           <div className="absolute -bottom-16 left-1/2 -translate-x-1/2">
-            <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden shadow-lg bg-white">
-              <OptimizedImage src={avatar} alt={name} />
+            <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden shadow-lg bg-white flex items-center justify-center bg-slate-200">
+              {avatar ? (
+                <img src={avatar} alt={name} className="w-full h-full object-cover" />
+              ) : (
+                <User size={64} className="text-slate-400" />
+              )}
             </div>
           </div>
         </div>

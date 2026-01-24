@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db, auth, storage } from '../lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, auth } from '../lib/firebase';
 import { User as UserIcon, Lock, Save, Loader2, ArrowLeft, Camera, Upload } from 'lucide-react';
 
 interface ProfilePageProps {
@@ -79,22 +78,64 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser, onBack }) => {
         if (!e.target.files || e.target.files.length === 0) return;
         const file = e.target.files[0];
 
+        // Check file size (limit to 2MB before processing)
+        if (file.size > 2 * 1024 * 1024) {
+            alert("A imagem é muito grande. Escolha uma menor de 2MB.");
+            return;
+        }
+
         setUploadingAvatar(true);
+
         try {
-            const storageRef = ref(storage, `avatars/${currentUser.uid}`);
-            await uploadBytes(storageRef, file);
-            const downloadURL = await getDownloadURL(storageRef);
+            // Process image to Base64 with resizing
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target?.result as string;
+                img.onload = async () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 400;
+                    const MAX_HEIGHT = 400;
+                    let width = img.width;
+                    let height = img.height;
 
-            await updateProfile(currentUser, { photoURL: downloadURL });
-            await updateDoc(doc(db, "users", currentUser.uid), { photoURL: downloadURL });
-            setAvatarUrl(downloadURL);
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
 
-            // Force refresh of user context if needed, but local state helps UI feedback
-            alert("Foto de perfil atualizada!");
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx?.drawImage(img, 0, 0, width, height);
+
+                    // Compress to JPEG with 0.7 quality
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+                    try {
+                        await updateProfile(currentUser, { photoURL: dataUrl });
+                        await updateDoc(doc(db, "users", currentUser.uid), { photoURL: dataUrl });
+                        setAvatarUrl(dataUrl);
+                        alert("Foto de perfil atualizada!");
+                    } catch (error: any) {
+                        console.error("Erro ao salvar foto:", error);
+                        alert("Erro ao salvar foto.");
+                    } finally {
+                        setUploadingAvatar(false);
+                    }
+                };
+            };
         } catch (error: any) {
-            console.error("Erro ao enviar foto:", error);
-            alert("Erro ao enviar foto. Tente novamente.");
-        } finally {
+            console.error("Erro ao processar foto:", error);
+            alert("Erro ao processar foto.");
             setUploadingAvatar(false);
         }
     };

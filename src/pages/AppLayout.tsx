@@ -14,11 +14,12 @@ import { PlanTier, PLAN_FEATURES } from '../constants/plans';
 import ProfilePage from './ProfilePage';
 import { db, auth } from '../lib/firebase';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
-import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
 
 const AppLayout: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [view, setView] = useState<ViewState>('dashboard');
+  const [firestoreUser, setFirestoreUser] = useState<any>(null); // To hold synced data
   const [cards, setCards] = useState<BusinessCard[]>([]);
   const [currentCard, setCurrentCard] = useState<BusinessCard | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -75,16 +76,29 @@ const AppLayout: React.FC = () => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUser(user);
-        // Listen to User's Cards
-        const q = query(collection(db, "cards"), where("userId", "==", user.uid));
-        const unsubscribeCards = onSnapshot(q, (snapshot) => {
-          const loadedCards: BusinessCard[] = [];
-          snapshot.forEach((doc) => {
-            loadedCards.push(doc.data() as BusinessCard);
-          });
-          setCards(loadedCards);
+
+        // Listen to Firestore User Doc for realtime avatar updates
+        const userDocRef = doc(db, "users", user.uid);
+        const unsubscribeUserDoc = onSnapshot(userDocRef, (docSnap) => {
+          if (docSnap.exists()) {
+            setFirestoreUser(docSnap.data());
+          }
         });
-        return () => unsubscribeCards();
+
+        const q = query(collection(db, "business_cards"), where("userId", "==", user.uid));
+        const unsubscribeCards = onSnapshot(q, (snapshot) => {
+          const loadedCards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BusinessCard));
+          setCards(loadedCards);
+
+          if (!currentCard && loadedCards.length > 0) {
+            setCurrentCard(loadedCards[0]);
+          }
+        });
+
+        return () => {
+          unsubscribeCards();
+          unsubscribeUserDoc();
+        };
       } else {
         setCurrentUser(null);
         setCards([]);
@@ -230,8 +244,8 @@ const AppLayout: React.FC = () => {
             className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border-2 border-white dark:border-slate-600 shadow-sm flex items-center justify-center hover:bg-slate-300 transition-colors"
             title="Meu Perfil"
           >
-            {currentUser?.photoURL ? (
-              <img src={currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
+            {firestoreUser?.photoURL || currentUser?.photoURL ? (
+              <img src={firestoreUser?.photoURL || currentUser?.photoURL} alt="Profile" className="w-full h-full object-cover" />
             ) : (
               <UserIcon className="text-slate-500" size={20} />
             )}

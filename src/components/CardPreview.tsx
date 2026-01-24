@@ -168,8 +168,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = fa
                 {card.portfolio.map((item, index) => (
                   <div key={item.id || index} className="bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 group">
                     {item.type === 'image' && (
-                      <div className="relative aspect-video bg-slate-200">
-                        <img src={item.url} alt={item.title} className="w-full h-full object-cover" />
+                      <div className={`relative aspect-video ${item.imageFit === 'contain' ? 'bg-transparent' : 'bg-slate-200'}`}>
+                        <img src={item.url} alt={item.title} className={`w-full h-full ${item.imageFit === 'contain' ? 'object-contain' : 'object-cover'}`} />
                       </div>
                     )}
 

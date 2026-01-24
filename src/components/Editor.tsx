@@ -29,6 +29,7 @@ const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selec
   const [portfolioTitle, setPortfolioTitle] = useState('');
   const [portfolioUrl, setPortfolioUrl] = useState('');
   const [portfolioDesc, setPortfolioDesc] = useState('');
+  const [portfolioImageFit, setPortfolioImageFit] = useState<'cover' | 'contain'>('cover');
   const [isUploadingPortfolio, setIsUploadingPortfolio] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -163,7 +164,8 @@ const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selec
       type: portfolioType,
       title: portfolioTitle,
       url: portfolioUrl,
-      description: portfolioDesc
+      description: portfolioDesc,
+      imageFit: portfolioImageFit
     };
 
     const currentPortfolio = card.portfolio || [];
@@ -174,6 +176,7 @@ const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selec
     setPortfolioUrl('');
     setPortfolioDesc('');
     setPortfolioType('image');
+    setPortfolioImageFit('cover');
   };
 
   const handleRemovePortfolioItem = (id: string) => {
@@ -511,6 +514,27 @@ const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selec
                           {isUploadingPortfolio ? <Loader2 className="animate-spin" /> : <Upload size={24} />}
                           <span className="text-xs font-bold uppercase">{isUploadingPortfolio ? 'Processando...' : 'Clique para enviar imagem'}</span>
                         </label>
+                      </div>
+                    )}
+
+                    {/* Image Fit Control */}
+                    {portfolioUrl && (
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Ajuste da Imagem</label>
+                        <div className="flex bg-white rounded-lg p-1 border border-slate-200">
+                          <button
+                            onClick={() => setPortfolioImageFit('cover')}
+                            className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${portfolioImageFit === 'cover' ? 'bg-slate-100 text-brand-blue shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                          >
+                            Preencher (Cortar)
+                          </button>
+                          <button
+                            onClick={() => setPortfolioImageFit('contain')}
+                            className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${portfolioImageFit === 'contain' ? 'bg-slate-100 text-brand-blue shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                          >
+                            Ajustar (Inteira)
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>

@@ -59,6 +59,7 @@ export interface PortfolioItem {
   url: string;
   title?: string;
   description?: string;
+  imageFit?: 'cover' | 'contain';
 }
 
 export interface CtaButton {

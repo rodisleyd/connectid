@@ -85,7 +85,7 @@ const AppLayout: React.FC = () => {
           }
         });
 
-        const q = query(collection(db, "business_cards"), where("userId", "==", user.uid));
+        const q = query(collection(db, "cards"), where("userId", "==", user.uid));
         const unsubscribeCards = onSnapshot(q, (snapshot) => {
           const loadedCards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BusinessCard));
           setCards(loadedCards);
@@ -139,7 +139,11 @@ const AppLayout: React.FC = () => {
   };
 
   const handleSaveCard = async () => {
-    if (!currentCard || !currentUser) return;
+    if (!currentCard || !currentUser) {
+      console.error("Save failed: Missing user or card data", { currentCard, currentUser });
+      alert("Erro: Você parece não estar logado. Tente recarregar a página ou fazer login novamente.");
+      return;
+    }
 
     try {
       await setDoc(doc(db, "cards", currentCard.id), {

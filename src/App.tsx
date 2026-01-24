@@ -30,6 +30,7 @@ const App: React.FC = () => {
                         </ProtectedRoute>
                     }
                 />
+                <Route path="*" element={<Navigate to="/" />} />
             </Routes>
         </Router>
     );

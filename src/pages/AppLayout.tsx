@@ -211,6 +211,18 @@ const AppLayout: React.FC = () => {
           <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border-2 border-white dark:border-slate-600 shadow-sm">
             <img src="https://picsum.photos/100" alt="Profile" className="w-full h-full object-cover" />
           </div>
+
+          {/* Admin Button */}
+          {(currentUser?.email === 'rodisleyd@yahoo.com.br' || currentUser?.email === 'admin@connectid.me') && (
+            <button
+              onClick={() => window.location.href = '/admin'}
+              className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-red-100 text-red-600 rounded-full text-xs font-bold hover:bg-red-200 transition-colors"
+              title="Acessar Painel Administrativo"
+            >
+              <Shield size={14} />
+              ADMIN
+            </button>
+          )}
         </div>
       </nav>
 

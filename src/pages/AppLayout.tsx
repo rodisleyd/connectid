@@ -222,7 +222,7 @@ const AppLayout: React.FC = () => {
       {/* Navbar */}
       <nav className={`border-b px-4 py-4 flex items-center justify-between sticky top-0 z-40 transition-colors duration-300 ${darkMode ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'}`}>
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('dashboard')}>
-          <img src={darkMode ? "/logo-negative.png" : "/logo.png"} alt="ConnectID" className="h-14 md:h-16 object-contain transition-all duration-300" />
+          <img src={darkMode ? "https://i.ibb.co/9mSMG5G2/logo-negativo2-connectid.png" : "https://i.ibb.co/yms4WVyw/logo-positivo2-connectid.png"} alt="ConnectID" className="h-14 md:h-16 object-contain transition-all duration-300" />
         </div>
         <div className="flex items-center gap-4">
           {cards.length > 0 && view === 'dashboard' && (

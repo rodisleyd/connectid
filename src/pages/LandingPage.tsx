@@ -10,7 +10,7 @@ const LandingPage: React.FC = () => {
             <header className="fixed w-full bg-white/80 backdrop-blur-md z-50 border-b border-slate-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <img src="/logo.png" alt="ConnectID" className="h-12" />
+                        <img src="https://i.ibb.co/yms4WVyw/logo-positivo2-connectid.png" alt="ConnectID" className="h-12" />
                     </div>
                     <div className="flex items-center gap-4">
                         <Link to="/login" className="text-slate-600 font-semibold hover:text-brand-blue transition-colors">Entrar</Link>
@@ -137,7 +137,7 @@ const LandingPage: React.FC = () => {
             <footer className="bg-slate-900 text-white py-12 px-4">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
                     <div className="flex items-center gap-2">
-                        <img src="/logo-negative.png" alt="ConnectID" className="h-8 opacity-50" />
+                        <img src="https://i.ibb.co/9mSMG5G2/logo-negativo2-connectid.png" alt="ConnectID" className="h-8 opacity-50" />
                         <span className="font-bold text-xl tracking-tight">ConnectID</span>
                     </div>
                     <div className="text-slate-400 text-sm">

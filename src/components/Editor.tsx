@@ -218,7 +218,10 @@ const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selec
           canvas.height = height;
           ctx?.drawImage(img, 0, 0, width, height);
 
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          const isPng = file.type === 'image/png';
+          const outputType = isPng ? 'image/png' : 'image/jpeg';
+          const quality = isPng ? undefined : 0.8;
+          const compressedBase64 = canvas.toDataURL(outputType, quality);
           setPortfolioUrl(compressedBase64);
           setIsUploadingPortfolio(false);
         };
@@ -469,8 +472,8 @@ const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selec
                         key={type.id}
                         onClick={() => setPortfolioType(type.id as any)}
                         className={`flex-1 p-3 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-2 transition-all ${portfolioType === type.id
-                            ? 'border-brand-blue bg-brand-blue/10 text-brand-blue'
-                            : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                          ? 'border-brand-blue bg-brand-blue/10 text-brand-blue'
+                          : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
                           }`}
                       >
                         {type.label}

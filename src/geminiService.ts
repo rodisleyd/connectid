@@ -4,7 +4,7 @@ const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
 
 export const generateBio = async (name: string, role: string, skills: string): Promise<string> => {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const result = await model.generateContent(`Escreva uma biografia profissional curta e impactante (máximo 150 caracteres) para um cartão de visita digital. 
       Nome: ${name}
       Cargo: ${role}
@@ -20,7 +20,7 @@ export const generateBio = async (name: string, role: string, skills: string): P
 export const suggestStyle = async (role: string): Promise<any> => {
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash",
       generationConfig: { responseMimeType: "application/json" }
     });
 

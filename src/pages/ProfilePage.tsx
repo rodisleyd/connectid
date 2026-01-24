@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { User, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db, auth } from '../lib/firebase'; // Added auth import here
-import { User as UserIcon, Lock, Save, Loader2, ArrowLeft } from 'lucide-react';
+import { db, auth, storage } from '../lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { User as UserIcon, Lock, Save, Loader2, ArrowLeft, Camera, Upload } from 'lucide-react';
 
 interface ProfilePageProps {
     currentUser: User;
@@ -12,6 +13,8 @@ interface ProfilePageProps {
 const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser, onBack }) => {
     const [name, setName] = useState(currentUser.displayName || '');
     const [email, setEmail] = useState(currentUser.email || '');
+    const [avatarUrl, setAvatarUrl] = useState(currentUser.photoURL || '');
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [loadingProfile, setLoadingProfile] = useState(false);
 
     const [currentPassword, setCurrentPassword] = useState('');
@@ -72,6 +75,30 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser, onBack }) => {
         }
     };
 
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        const file = e.target.files[0];
+
+        setUploadingAvatar(true);
+        try {
+            const storageRef = ref(storage, `avatars/${currentUser.uid}`);
+            await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(storageRef);
+
+            await updateProfile(currentUser, { photoURL: downloadURL });
+            await updateDoc(doc(db, "users", currentUser.uid), { photoURL: downloadURL });
+            setAvatarUrl(downloadURL);
+
+            // Force refresh of user context if needed, but local state helps UI feedback
+            alert("Foto de perfil atualizada!");
+        } catch (error: any) {
+            console.error("Erro ao enviar foto:", error);
+            alert("Erro ao enviar foto. Tente novamente.");
+        } finally {
+            setUploadingAvatar(false);
+        }
+    };
+
     return (
         <div className="max-w-2xl mx-auto p-6">
             <button
@@ -93,6 +120,25 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser, onBack }) => {
                         <h2 className="text-xl font-bold text-slate-900">Informações Pessoais</h2>
                         <p className="text-sm text-slate-500">Atualize seus dados de identificação</p>
                     </div>
+                </div>
+
+                <div className="flex flex-col items-center mb-8">
+                    <div className="relative group cursor-pointer">
+                        <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-slate-100 group-hover:border-brand-blue transition-colors">
+                            {avatarUrl ? (
+                                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">
+                                    <UserIcon size={48} />
+                                </div>
+                            )}
+                        </div>
+                        <label className="absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-0 group-hover:opacity-100 rounded-full transition-opacity cursor-pointer">
+                            {uploadingAvatar ? <Loader2 className="animate-spin" /> : <Camera size={24} />}
+                            <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+                        </label>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-2 font-medium">Clique para alterar a foto</p>
                 </div>
 
                 <form onSubmit={handleUpdateProfile} className="space-y-4">

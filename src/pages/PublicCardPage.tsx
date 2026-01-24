@@ -70,24 +70,31 @@ const PublicCardPage: React.FC = () => {
         if (!card) return;
 
         if (action === 'save') {
-            // Generate vCard
+            // Improved vCard generation for better compatibility
+            const names = card.name.split(' ');
+            const lastName = names.length > 1 ? names.pop() : '';
+            const firstName = names.join(' ');
+
             const vcard = `BEGIN:VCARD
 VERSION:3.0
+N:${lastName};${firstName};;;
 FN:${card.name}
 ORG:${card.company}
 TITLE:${card.role}
-TEL;TYPE=CELL:${card.phone}
-EMAIL:${card.email}
+TEL;type=CELL;type=VOICE;type=pref:${card.phone}
+EMAIL;type=INTERNET;type=WORK:${card.email}
 URL:${card.website}
-ADR:${card.address}
+ADR;type=WORK:;;${card.address};;;;
 NOTE:${card.bio}
 END:VCARD`;
-            const blob = new Blob([vcard], { type: 'text/vcard' });
+
+            const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${card.name}.vcf`;
+            a.download = `${card.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.vcf`;
             a.click();
+            window.URL.revokeObjectURL(url);
         }
 
         if (action === 'share') {

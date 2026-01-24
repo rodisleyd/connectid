@@ -66,13 +66,51 @@ const PublicCardPage: React.FC = () => {
     // Use a generic mobile device frame for public view
     const displayDevice = DEVICES.find(d => d.id === 'iphone-14') || DEVICES[0];
 
+    const handleAction = (action: string) => {
+        if (!card) return;
+
+        if (action === 'save') {
+            // Generate vCard
+            const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:${card.name}
+ORG:${card.company}
+TITLE:${card.role}
+TEL;TYPE=CELL:${card.phone}
+EMAIL:${card.email}
+URL:${card.website}
+ADR:${card.address}
+NOTE:${card.bio}
+END:VCARD`;
+            const blob = new Blob([vcard], { type: 'text/vcard' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${card.name}.vcf`;
+            a.click();
+        }
+
+        if (action === 'share') {
+            if (navigator.share) {
+                navigator.share({
+                    title: card.name,
+                    text: `Confira o cartão digital de ${card.name}`,
+                    url: window.location.href
+                }).catch(console.error);
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert('Link copiado!');
+            }
+        }
+    };
+
     return (
         <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
             <div className="md:hidden w-full h-full absolute inset-0 bg-white">
-                <CardPreview card={card} />
+                <CardPreview card={card} onAction={handleAction} />
             </div>
             <div className="hidden md:block scale-90">
-                <CardPreview card={card} isMockup={true} device={displayDevice} />
+                <CardPreview card={card} onAction={handleAction} isMockup={true} device={displayDevice} />
             </div>
         </div>
     );

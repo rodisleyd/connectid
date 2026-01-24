@@ -22,27 +22,33 @@ const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        checkAdminAndFetchUsers();
+        let unsubscribeAuth: (() => void) | undefined;
+
+        const init = async () => {
+            const { onAuthStateChanged } = await import('firebase/auth');
+            unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+                if (!user) {
+                    navigate('/login');
+                    return;
+                }
+
+                // Auth verified, now check admin and fetch
+                await checkAdminAndFetchUsers(user);
+            });
+        };
+
+        init();
+        return () => {
+            if (unsubscribeAuth) unsubscribeAuth();
+        }
     }, []);
 
-    const checkAdminAndFetchUsers = async () => {
-        // 1. Check if current user is admin
-        // For bootstrapping, we allow specific emails or check a 'role' field
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            navigate('/login');
-            return;
-        }
-
+    const checkAdminAndFetchUsers = async (currentUser: any) => {
         // Temporary: Allow known email to be admin automatically for bootstrapping
         const BOOTSTRAP_ADMINS = ['rodisleyd@yahoo.com.br', 'admin@connectid.me'];
 
         if (BOOTSTRAP_ADMINS.includes(currentUser.email || '')) {
             setIsAdmin(true);
-        } else {
-            // Check firestore role
-            // For now, if we can't verify, we might kick them out. 
-            // But let's assume the user is the owner.
         }
 
         try {
@@ -55,7 +61,6 @@ const AdminDashboard: React.FC = () => {
             setUsers(loadedUsers);
         } catch (error) {
             console.error("Error fetching users:", error);
-            alert("Erro ao buscar usuários. Verifique as permissões.");
         } finally {
             setLoading(false);
         }

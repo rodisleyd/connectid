@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { db, auth } from '../lib/firebase';
-import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
-import { Loader2, Trash2, Shield, ShieldAlert, Award, Search, LogOut } from 'lucide-react';
+import { db, auth, firebaseConfig } from '../lib/firebase';
+import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, setDoc } from 'firebase/firestore';
+import { Loader2, Trash2, Shield, ShieldAlert, Award, Search, LogOut, Plus, X, Save } from 'lucide-react';
+import { initializeApp, deleteApp } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { PlanTier, PLAN_FEATURES } from '../constants/plans';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,6 +21,11 @@ const AdminDashboard: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [showAddUserModal, setShowAddUserModal] = useState(false);
+    const [newName, setNewName] = useState('');
+    const [newEmail, setNewEmail] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [creatingUser, setCreatingUser] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -102,6 +109,51 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
+    const handleAddUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setCreatingUser(true);
+
+        try {
+            // initialize secondary app
+            const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+            const secondaryAuth = getAuth(secondaryApp);
+
+            // create user in secondary app
+            const userCredential = await createUserWithEmailAndPassword(secondaryAuth, newEmail, newPassword);
+            const newUser = userCredential.user;
+
+            // create user doc in main firestore
+            await setDoc(doc(db, "users", newUser.uid), {
+                uid: newUser.uid,
+                name: newName,
+                email: newEmail,
+                plan: PlanTier.BASIC,
+                role: 'user',
+                createdAt: new Date().toISOString()
+            });
+
+            // cleanup secondary app
+            await signOut(secondaryAuth);
+            await deleteApp(secondaryApp);
+
+            // refresh list
+            await checkAdminAndFetchUsers(auth.currentUser);
+
+            // close and reset
+            setShowAddUserModal(false);
+            setNewName('');
+            setNewEmail('');
+            setNewPassword('');
+            alert("Usuário criado com sucesso!");
+
+        } catch (error: any) {
+            console.error("Error creating user:", error);
+            alert(`Erro ao criar usuário: ${error.message}`);
+        } finally {
+            setCreatingUser(false);
+        }
+    };
+
 
     const filteredUsers = users.filter(user =>
         user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -118,9 +170,17 @@ const AdminDashboard: React.FC = () => {
                         <h1 className="text-3xl font-bold text-slate-900">Painel Administrativo</h1>
                         <p className="text-slate-500">Gerencie usuários, planos e permissões.</p>
                     </div>
-                    <button onClick={() => navigate('/app')} className="text-sm font-bold text-slate-500 hover:text-brand-blue flex items-center gap-2">
-                        <LogOut size={16} className="rotate-180" /> Voltar ao App
-                    </button>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => setShowAddUserModal(true)}
+                            className="bg-brand-blue text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2"
+                        >
+                            <Plus size={18} /> Adicionar Usuário
+                        </button>
+                        <button onClick={() => navigate('/app')} className="text-sm font-bold text-slate-500 hover:text-brand-blue flex items-center gap-2">
+                            <LogOut size={16} className="rotate-180" /> Voltar ao App
+                        </button>
+                    </div>
                 </div>
 
                 {/* Stats Cards */}
@@ -216,7 +276,70 @@ const AdminDashboard: React.FC = () => {
                     </div>
                 </div>
             </div>
-        </div>
+
+            {/* Add User Modal */}
+            {showAddUserModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowAddUserModal(false)}></div>
+                    <div className="relative bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+                        <button
+                            onClick={() => setShowAddUserModal(false)}
+                            className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <h2 className="text-2xl font-bold mb-6 text-slate-900">Adicionar Novo Usuário</h2>
+
+                        <form onSubmit={handleAddUser} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Nome Completo</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={newName}
+                                    onChange={e => setNewName(e.target.value)}
+                                    className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-blue outline-none"
+                                    placeholder="Ex: João Silva"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Email</label>
+                                <input
+                                    type="email"
+                                    required
+                                    value={newEmail}
+                                    onChange={e => setNewEmail(e.target.value)}
+                                    className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-blue outline-none"
+                                    placeholder="Ex: joao@email.com"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Senha Provisória</label>
+                                <input
+                                    type="password"
+                                    required
+                                    minLength={6}
+                                    value={newPassword}
+                                    onChange={e => setNewPassword(e.target.value)}
+                                    className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-blue outline-none"
+                                    placeholder="Mínimo 6 caracteres"
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={creatingUser}
+                                className="w-full bg-brand-blue text-white p-4 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 mt-6"
+                            >
+                                {creatingUser ? <Loader2 className="animate-spin" /> : <><Save size={20} /> Criar Usuário</>}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )
+            }
+        </div >
     );
 };
 

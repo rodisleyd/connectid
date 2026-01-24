@@ -46,9 +46,13 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = fa
   };
 
   const containerStyles = `
-    ${isMockup ? '' : 'w-full max-w-sm min-h-[600px] rounded-3xl'}
+    ${isMockup ? '' : 'w-full max-w-sm min-h-[600px]'}
     ${isMockup ? 'rounded-[40px] border-[8px] border-slate-800 shadow-2xl overflow-hidden relative flex flex-col' : 'mx-auto shadow-2xl overflow-hidden relative flex flex-col'}
-    ${template === TemplateType.CORPORATE ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'}
+    ${template === TemplateType.CORPORATE ? 'bg-slate-900 text-white' : ''}
+    ${template === 'minimalist' ? 'bg-white text-slate-800 font-light' : ''}
+    ${template === 'creative' ? 'bg-gradient-to-br from-white to-slate-100 text-slate-900 border-4' : ''}
+    ${template === 'artistic' ? 'text-slate-900 bg-[url("https://www.transparenttextures.com/patterns/cubes.png")]' : ''}
+    ${(template !== TemplateType.CORPORATE && template !== 'minimalist' && template !== 'creative' && template !== 'artistic') ? 'bg-white text-slate-900' : ''}
   `;
 
   return (
@@ -59,11 +63,14 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = fa
       <div className={`w-full h-full flex flex-col ${isMockup ? 'overflow-y-auto no-scrollbar pt-12 pb-8' : ''} bg-inherit`}>
         {/* Header / Cover Image */}
         <div
-          className="h-32 w-full relative shrink-0"
-          style={{ backgroundColor: style.primaryColor }}
+          className={`h-32 w-full relative shrink-0 ${template === 'minimalist' ? 'h-24 opacity-20' : ''} ${template === 'creative' ? 'h-40 clip-path-slant' : ''}`}
+          style={{
+            backgroundColor: style.primaryColor,
+            backgroundImage: template === 'artistic' ? `linear-gradient(45deg, ${style.primaryColor}, ${style.secondaryColor})` : undefined
+          }}
         >
           <div className="absolute -bottom-16 left-1/2 -translate-x-1/2">
-            <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden shadow-lg bg-white flex items-center justify-center bg-slate-200">
+            <div className={`w-32 h-32 overflow-hidden shadow-lg bg-white flex items-center justify-center bg-slate-200 ${template === 'minimalist' ? 'border-2' : 'border-4 border-white'}`} style={{ borderRadius: style.borderRadius }}>
               {avatar ? (
                 <img src={avatar} alt={name} className="w-full h-full object-cover" />
               ) : (
@@ -84,8 +91,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = fa
           {/* Action Buttons */}
           <div className="mt-8 w-full space-y-3">
             <button
-              className="w-full py-3 px-4 rounded-xl flex items-center justify-center gap-2 font-semibold transition-transform active:scale-95 shadow-md"
-              style={{ backgroundColor: style.primaryColor, color: 'white' }}
+              className="w-full py-3 px-4 flex items-center justify-center gap-2 font-semibold transition-transform active:scale-95 shadow-md"
+              style={{ backgroundColor: style.primaryColor, color: 'white', borderRadius: style.borderRadius }}
               onClick={() => onAction?.('save')}
             >
               <UserPlus size={18} />
@@ -94,8 +101,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = fa
 
             <div className="grid grid-cols-2 gap-3">
               <button
-                className="py-3 px-4 rounded-xl border-2 flex items-center justify-center gap-2 font-medium transition-colors"
-                style={{ borderColor: style.primaryColor, color: style.primaryColor }}
+                className="py-3 px-4 border-2 flex items-center justify-center gap-2 font-medium transition-colors"
+                style={{ borderColor: style.primaryColor, color: style.primaryColor, borderRadius: style.borderRadius }}
                 onClick={() => onAction?.('share')}
               >
                 <Share2 size={18} />
@@ -105,7 +112,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = fa
                 href={`https://wa.me/${whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="py-3 px-4 rounded-xl flex items-center justify-center gap-2 font-medium bg-green-500 text-white shadow-md"
+                className="py-3 px-4 flex items-center justify-center gap-2 font-medium bg-green-500 text-white shadow-md"
+                style={{ borderRadius: style.borderRadius }}
                 onClick={() => onAction?.('whatsapp')}
               >
                 <WhatsappLogo />
@@ -116,27 +124,27 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = fa
 
           {/* Contact Info List */}
           <div className="mt-8 w-full space-y-4 text-left">
-            <a href={`tel:${phone}`} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors group">
+            <a href={`tel:${phone}`} className="flex items-center gap-3 p-3 hover:bg-slate-100 transition-colors group" style={{ borderRadius: style.borderRadius }}>
               <div className="p-2 rounded-full bg-slate-100 group-hover:bg-white text-slate-600 transition-colors">
                 <Phone size={16} />
               </div>
               <span className="text-sm font-medium">{phone}</span>
             </a>
-            <a href={`mailto:${email}`} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors group">
+            <a href={`mailto:${email}`} className="flex items-center gap-3 p-3 hover:bg-slate-100 transition-colors group" style={{ borderRadius: style.borderRadius }}>
               <div className="p-2 rounded-full bg-slate-100 group-hover:bg-white text-slate-600 transition-colors">
                 <Mail size={16} />
               </div>
               <span className="text-sm font-medium">{email}</span>
             </a>
             {website && (
-              <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors group">
+              <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 hover:bg-slate-100 transition-colors group" style={{ borderRadius: style.borderRadius }}>
                 <div className="p-2 rounded-full bg-slate-100 group-hover:bg-white text-slate-600 transition-colors">
                   <Globe size={16} />
                 </div>
                 <span className="text-sm font-medium">{website.replace('https://', '').replace('http://', '')}</span>
               </a>
             )}
-            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors group">
+            <div className="flex items-center gap-3 p-3 hover:bg-slate-100 transition-colors group" style={{ borderRadius: style.borderRadius }}>
               <div className="p-2 rounded-full bg-slate-100 group-hover:bg-white text-slate-600 transition-colors">
                 <MapPin size={16} />
               </div>
@@ -152,7 +160,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = fa
                 href={link.url.startsWith('http') ? link.url : `https://${link.url}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
+                className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
+                style={{ borderRadius: style.borderRadius }}
                 title={link.platform}
               >
                 {renderSocialIcon(link.platform)}
@@ -166,7 +175,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = fa
               <h3 className="text-sm font-bold opacity-60 uppercase tracking-widest mb-4">Portfólio</h3>
               <div className="grid grid-cols-1 gap-4">
                 {card.portfolio.map((item, index) => (
-                  <div key={item.id || index} className="bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 group">
+                  <div key={item.id || index} className="bg-slate-50 overflow-hidden border border-slate-100 group" style={{ borderRadius: style.borderRadius }}>
                     {item.type === 'image' && (
                       <div className={`relative aspect-video ${item.imageFit === 'contain' ? 'bg-transparent' : 'bg-slate-200'}`}>
                         <img src={item.url} alt={item.title} className={`w-full h-full ${item.imageFit === 'contain' ? 'object-contain' : 'object-cover'}`} />
@@ -192,7 +201,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = fa
 
                     {item.type === 'link' && (
                       <div className="p-4 flex items-center gap-4 bg-slate-100/50">
-                        <div className="p-3 bg-white rounded-xl text-brand-blue shadow-sm">
+                        <div className="p-3 bg-white text-brand-blue shadow-sm" style={{ borderRadius: `calc(${style.borderRadius} / 1.5)` }}>
                           <Globe size={20} />
                         </div>
                         <div className="flex-1 min-w-0 text-left">

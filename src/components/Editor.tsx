@@ -69,6 +69,7 @@ const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selec
           ...card.style,
           primaryColor: suggestion.primaryColor || card.style.primaryColor,
           secondaryColor: suggestion.secondaryColor || card.style.secondaryColor,
+          borderRadius: suggestion.borderRadius || card.style.borderRadius,
         },
         template: (suggestion.template as TemplateType) || card.template
       });

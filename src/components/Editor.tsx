@@ -24,6 +24,13 @@ const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selec
   const [isGenerating, setIsGenerating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Portfolio State
+  const [portfolioType, setPortfolioType] = useState<'image' | 'video' | 'link'>('image');
+  const [portfolioTitle, setPortfolioTitle] = useState('');
+  const [portfolioUrl, setPortfolioUrl] = useState('');
+  const [portfolioDesc, setPortfolioDesc] = useState('');
+  const [isUploadingPortfolio, setIsUploadingPortfolio] = useState(false);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     onUpdate({ ...card, [name]: value });
@@ -143,6 +150,82 @@ const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selec
 
   const handleRemoveSocial = (id: string) => {
     onUpdate({ ...card, socialLinks: card.socialLinks.filter(l => l.id !== id) });
+  };
+
+  const handleAddPortfolioItem = () => {
+    if (!portfolioUrl) {
+      alert("Por favor, adicione uma URL ou imagem.");
+      return;
+    }
+
+    const newItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      type: portfolioType,
+      title: portfolioTitle,
+      url: portfolioUrl,
+      description: portfolioDesc
+    };
+
+    const currentPortfolio = card.portfolio || [];
+    onUpdate({ ...card, portfolio: [...currentPortfolio, newItem] });
+
+    // Reset form
+    setPortfolioTitle('');
+    setPortfolioUrl('');
+    setPortfolioDesc('');
+    setPortfolioType('image');
+  };
+
+  const handleRemovePortfolioItem = (id: string) => {
+    const currentPortfolio = card.portfolio || [];
+    onUpdate({ ...card, portfolio: currentPortfolio.filter(item => item.id !== id) });
+  };
+
+  const handlePortfolioImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("A imagem é muito grande. Tente uma menor que 5MB.");
+        return;
+      }
+
+      setIsUploadingPortfolio(true);
+      const reader = new FileReader();
+
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const MAX_WIDTH = 500; // Slightly larger for portfolio
+          const MAX_HEIGHT = 500;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          setPortfolioUrl(compressedBase64);
+          setIsUploadingPortfolio(false);
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -366,9 +449,144 @@ const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selec
 
         {activeTab === 'portfolio' && planFeatures.allowPortfolio && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-3xl">
-              <p className="text-slate-500 font-medium">✨ Área de Portfólio (Plano Avançado)</p>
-              <p className="text-xs text-slate-400 mt-2">Em breve: Upload de imagens e vídeos aqui.</p>
+            {/* Add New Item */}
+            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200">
+              <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
+                <Plus size={18} className="text-brand-blue" />
+                Adicionar Novo Item
+              </h3>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Tipo de Conteúdo</label>
+                  <div className="flex gap-2">
+                    {[
+                      { id: 'image', label: 'Imagem', icon: Sparkles },
+                      { id: 'video', label: 'Vídeo (YouTube)', icon: Smartphone },
+                      { id: 'link', label: 'Link Externo', icon: Tablet }
+                    ].map(type => (
+                      <button
+                        key={type.id}
+                        onClick={() => setPortfolioType(type.id as any)}
+                        className={`flex-1 p-3 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-2 transition-all ${portfolioType === type.id
+                            ? 'border-brand-blue bg-brand-blue/10 text-brand-blue'
+                            : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                          }`}
+                      >
+                        {type.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {portfolioType === 'image' ? (
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Upload da Imagem</label>
+                    {portfolioUrl ? (
+                      <div className="relative w-full h-48 rounded-xl overflow-hidden group">
+                        <img src={portfolioUrl} alt="Preview" className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => setPortfolioUrl('')}
+                          className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white font-bold"
+                        >
+                          <Trash2 size={24} /> Remover
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <input
+                          type="file"
+                          id="portfolio-upload"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handlePortfolioImageUpload}
+                        />
+                        <label
+                          htmlFor="portfolio-upload"
+                          className="flex flex-col items-center justify-center gap-2 w-full h-32 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors text-slate-500"
+                        >
+                          {isUploadingPortfolio ? <Loader2 className="animate-spin" /> : <Upload size={24} />}
+                          <span className="text-xs font-bold uppercase">{isUploadingPortfolio ? 'Processando...' : 'Clique para enviar imagem'}</span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">URL do {portfolioType === 'video' ? 'Vídeo (YouTube/Vimeo)' : 'Link'}</label>
+                    <input
+                      type="text"
+                      value={portfolioUrl}
+                      onChange={e => setPortfolioUrl(e.target.value)}
+                      placeholder={portfolioType === 'video' ? 'https://youtube.com/watch?v=...' : 'https://seu-site.com'}
+                      className="w-full p-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-blue"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Título (Opcional)</label>
+                  <input
+                    type="text"
+                    value={portfolioTitle}
+                    onChange={e => setPortfolioTitle(e.target.value)}
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-blue"
+                    placeholder="Ex: Meu Projeto Incrível"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Descrição (Opcional)</label>
+                  <textarea
+                    value={portfolioDesc}
+                    onChange={e => setPortfolioDesc(e.target.value)}
+                    rows={2}
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-blue resize-none"
+                    placeholder="Breve descrição..."
+                  />
+                </div>
+
+                <button
+                  onClick={handleAddPortfolioItem}
+                  disabled={!portfolioUrl}
+                  className="w-full py-3 bg-brand-blue text-white font-bold rounded-xl hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Adicionar ao Portfólio
+                </button>
+              </div>
+            </div>
+
+            {/* List Existing Items */}
+            <div className="space-y-4">
+              <h3 className="font-bold text-slate-700 uppercase text-xs">Itens Adicionados ({card.portfolio?.length || 0})</h3>
+              {(!card.portfolio || card.portfolio.length === 0) && (
+                <p className="text-sm text-slate-400 text-center py-4">Nenhum item no portfólio.</p>
+              )}
+
+              {card.portfolio?.map((item, index) => (
+                <div key={item.id || index} className="flex gap-4 p-4 bg-white border border-slate-200 rounded-2xl relative group">
+                  <div className="w-20 h-20 rounded-xl bg-slate-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                    {item.type === 'image' ? (
+                      <img src={item.url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      item.type === 'video' ? <Smartphone size={24} className="text-slate-400" /> : <Tablet size={24} className="text-slate-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-bold text-slate-800 truncate pr-8">{item.title || 'Sem título'}</h4>
+                      <button
+                        onClick={() => handleRemovePortfolioItem(item.id)}
+                        className="text-red-500 hover:bg-red-50 p-1.5 rounded-full transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                    <p className="text-xs text-brand-blue font-bold uppercase mt-1">{item.type}</p>
+                    <p className="text-sm text-slate-500 truncate mt-1">{item.description}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

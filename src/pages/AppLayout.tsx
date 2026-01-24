@@ -6,7 +6,7 @@ import Dashboard from '../components/Dashboard';
 import Editor from '../components/Editor';
 import CardPreview from '../components/CardPreview';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Layout, X, Share2, Download, Check, AlertCircle, Sun, Moon } from 'lucide-react';
+import { Layout, X, Share2, Download, Check, AlertCircle, Sun, Moon, Shield } from 'lucide-react';
 import { DEVICES } from '../constants';
 import { Device } from '../types';
 import DeviceSelector from '../components/DeviceSelector';

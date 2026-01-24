@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { User as UserIcon, Lock, Save, Loader2, ArrowLeft, Camera, Upload } from 'lucide-react';
 
@@ -123,7 +123,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser, onBack }) => {
 
                     try {
                         // 1. Save to Firestore (Unlimited size usually)
-                        await updateDoc(doc(db, "users", currentUser.uid), { photoURL: dataUrl });
+                        // Use setDoc with merge to create if it doesn't exist
+                        await setDoc(doc(db, "users", currentUser.uid), { photoURL: dataUrl }, { merge: true });
 
                         // 2. Try to update Auth Profile (Limited size)
                         try {

@@ -6,13 +6,13 @@ import Dashboard from '../components/Dashboard';
 import Editor from '../components/Editor';
 import CardPreview from '../components/CardPreview';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Layout, X, Share2, Download, Check, AlertCircle, Sun, Moon, Shield } from 'lucide-react';
+import { Layout, X, Share2, Download, Check, AlertCircle, Sun, Moon, Shield, LogOut } from 'lucide-react';
 import { DEVICES } from '../constants';
 import { Device } from '../types';
 import DeviceSelector from '../components/DeviceSelector';
 import { PlanTier, PLAN_FEATURES } from '../constants/plans';
 import { db, auth } from '../lib/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
 
 const AppLayout: React.FC = () => {
@@ -192,6 +192,16 @@ const AppLayout: React.FC = () => {
     showNotification('QR Code baixado com sucesso!', 'success');
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Error signing out:', error);
+      showNotification('Erro ao sair da conta.', 'error');
+    }
+  };
+
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'dark bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       {/* Navbar */}
@@ -217,6 +227,14 @@ const AppLayout: React.FC = () => {
           <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border-2 border-white dark:border-slate-600 shadow-sm">
             <img src="https://picsum.photos/100" alt="Profile" className="w-full h-full object-cover" />
           </div>
+
+          <button
+            onClick={handleLogout}
+            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
+            title="Sair"
+          >
+            <LogOut size={20} />
+          </button>
 
           {/* Admin Button */}
           {(currentUser?.email === 'rodisleyd@yahoo.com.br' || currentUser?.email === 'admin@connectid.me') && (

@@ -32,8 +32,9 @@ const LoginPage: React.FC = () => {
         try {
             await signInWithPopup(auth, googleProvider);
             navigate('/app');
-        } catch (err) {
-            setError('Erro ao entrar com Google.');
+        } catch (err: any) {
+            console.error('Google Login Error:', err);
+            setError(`Erro ao entrar com Google: ${err.code || err.message}`);
         } finally {
             setLoading(false);
         }

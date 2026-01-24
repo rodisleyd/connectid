@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from '../lib/firebase';
+import { auth, googleProvider, db } from '../lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { PlanTier } from '../constants/plans';
 import { ArrowLeft, Mail, Lock, Loader2 } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
@@ -30,7 +32,25 @@ const LoginPage: React.FC = () => {
         setLoading(true);
         setError('');
         try {
-            await signInWithPopup(auth, googleProvider);
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
+
+            // Check if user doc exists
+            const userDocRef = doc(db, "users", user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+
+            if (!userDocSnap.exists()) {
+                // Create user doc if first time
+                await setDoc(userDocRef, {
+                    uid: user.uid,
+                    name: user.displayName || 'Usuário Google',
+                    email: user.email,
+                    plan: PlanTier.BASIC,
+                    role: 'user',
+                    createdAt: new Date().toISOString()
+                });
+            }
+
             navigate('/app');
         } catch (err: any) {
             console.error('Google Login Error:', err);

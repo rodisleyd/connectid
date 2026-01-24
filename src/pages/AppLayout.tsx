@@ -36,6 +36,12 @@ const AppLayout: React.FC = () => {
   useEffect(() => {
     if (currentUser) {
       const fetchUserPlan = async () => {
+        // Super Admin Override
+        if (currentUser.email === 'rodisleyd@yahoo.com.br' || currentUser.email === 'admin@connectid.me') {
+          setCurrentPlan(PlanTier.PREMIUM);
+          return;
+        }
+
         // In a real app we'd listen to the user doc, but for now let's just default basic or allow admin to override in memory if needed
         // Actually, we should check the user document from Firestore here.
         // For simplicity in this step, let's keep basic but allow the database listener below to update it.

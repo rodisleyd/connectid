@@ -78,4 +78,4 @@ export interface Device {
   scale: number;
 }
 
-export type ViewState = 'dashboard' | 'editor' | 'preview' | 'analytics';
+export type ViewState = 'dashboard' | 'editor' | 'preview' | 'analytics' | 'profile';

@@ -127,7 +127,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser, onBack }) => {
                         alert("Foto de perfil atualizada!");
                     } catch (error: any) {
                         console.error("Erro ao salvar foto:", error);
-                        alert("Erro ao salvar foto.");
+                        alert(`Erro ao salvar foto: ${error.message} (${error.code})`);
                     } finally {
                         setUploadingAvatar(false);
                     }

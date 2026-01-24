@@ -31,6 +31,24 @@ const AppLayout: React.FC = () => {
   });
 
   const [currentPlan, setCurrentPlan] = useState<PlanTier>(PlanTier.BASIC);
+
+  // Update plan based on actual user data
+  useEffect(() => {
+    if (currentUser) {
+      const fetchUserPlan = async () => {
+        // In a real app we'd listen to the user doc, but for now let's just default basic or allow admin to override in memory if needed
+        // Actually, we should check the user document from Firestore here.
+        // For simplicity in this step, let's keep basic but allow the database listener below to update it.
+        const userDoc = await import('firebase/firestore').then(fs => fs.getDoc(fs.doc(db, "users", currentUser.uid)));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (userData.plan) setCurrentPlan(userData.plan as PlanTier);
+        }
+      };
+      fetchUserPlan();
+    }
+  }, [currentUser]);
+
   const planFeatures = PLAN_FEATURES[currentPlan];
 
   useEffect(() => {
@@ -196,19 +214,7 @@ const AppLayout: React.FC = () => {
         </div>
       </nav>
 
-      {/* Dev Plan Switcher - Temporary for Testing */}
-      <div className="bg-slate-800 text-white p-2 text-xs flex justify-center gap-4">
-        <span className="font-bold opacity-50 uppercase tracking-widest my-auto">Simular Plano:</span>
-        {Object.values(PlanTier).map(tier => (
-          <button
-            key={tier}
-            onClick={() => setCurrentPlan(tier)}
-            className={`px-3 py-1 rounded-full font-bold transition-all ${currentPlan === tier ? 'bg-brand-blue text-white shadow-lg scale-105' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'}`}
-          >
-            {PLAN_FEATURES[tier].name}
-          </button>
-        ))}
-      </div>
+
 
       {/* Notifications */}
       {notification && (

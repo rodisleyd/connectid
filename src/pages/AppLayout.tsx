@@ -193,7 +193,7 @@ const AppLayout: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'dark bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       {/* Navbar */}
       <nav className={`border-b px-4 py-4 flex items-center justify-between sticky top-0 z-40 transition-colors duration-300 ${darkMode ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'}`}>
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('dashboard')}>

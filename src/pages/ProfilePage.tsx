@@ -118,11 +118,20 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser, onBack }) => {
                     ctx?.drawImage(img, 0, 0, width, height);
 
                     // Compress to JPEG with 0.7 quality
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    // Even more compression to try to fit, but main storage is Firestore
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
 
                     try {
-                        await updateProfile(currentUser, { photoURL: dataUrl });
+                        // 1. Save to Firestore (Unlimited size usually)
                         await updateDoc(doc(db, "users", currentUser.uid), { photoURL: dataUrl });
+
+                        // 2. Try to update Auth Profile (Limited size)
+                        try {
+                            await updateProfile(currentUser, { photoURL: dataUrl });
+                        } catch (e) {
+                            console.warn("Could not update Auth profile photo (too long), but saved to DB.");
+                        }
+
                         setAvatarUrl(dataUrl);
                         alert("Foto de perfil atualizada!");
                     } catch (error: any) {

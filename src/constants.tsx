@@ -10,6 +10,7 @@ export const DEFAULT_CARD_STYLE = {
 
 export const INITIAL_CARD_DATA: BusinessCard = {
   id: 'temp-id',
+  userId: 'temp-user',
   active: true,
   name: 'Seu Nome',
   role: 'Seu Cargo',

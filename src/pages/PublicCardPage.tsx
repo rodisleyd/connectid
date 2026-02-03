@@ -109,6 +109,18 @@ END:VCARD`;
                 alert('Link copiado!');
             }
         }
+
+        if (action === 'whatsapp') {
+            updateDoc(doc(db, "cards", id!), {
+                "analytics.whatsappClicks": increment(1)
+            }).catch(console.error);
+        }
+
+        if (action === 'link') {
+            updateDoc(doc(db, "cards", id!), {
+                "analytics.linkClicks": increment(1)
+            }).catch(console.error);
+        }
     };
 
     return (

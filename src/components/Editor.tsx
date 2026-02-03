@@ -702,7 +702,15 @@ const Editor: React.FC<EditorProps> = ({ card, onUpdate, onSave, onCancel, selec
                   transformOrigin: 'center center'
                 }}
               >
-                <CardPreview card={card} isMockup={true} device={selectedDevice} />
+                <CardPreview
+                  card={currentCard}
+                  isMockup={true}
+                  device={selectedDevice}
+                  onAction={(action) => {
+                    if (action === 'share') alert("Para compartilhar, primeiro SALVE o cartão. Depois use o botão de compartilhar no Dashboard.");
+                    else alert("Esta é apenas uma prévia visual. Os botões funcionarão no cartão real!");
+                  }}
+                />
               </div>
             </div>
           </div>

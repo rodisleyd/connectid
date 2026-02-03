@@ -137,7 +137,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = fa
               <span className="text-sm font-medium">{email}</span>
             </a>
             {website && (
-              <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 hover:bg-slate-100 transition-colors group" style={{ borderRadius: style.borderRadius }}>
+              <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 hover:bg-slate-100 transition-colors group" style={{ borderRadius: style.borderRadius }} onClick={() => onAction?.('link')}>
                 <div className="p-2 rounded-full bg-slate-100 group-hover:bg-white text-slate-600 transition-colors">
                   <Globe size={16} />
                 </div>
@@ -163,6 +163,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = fa
                 className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
                 style={{ borderRadius: style.borderRadius }}
                 title={link.platform}
+                onClick={() => onAction?.('link')}
               >
                 {renderSocialIcon(link.platform)}
               </a>
@@ -208,7 +209,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card, onAction, isMockup = fa
                           <div className="font-bold text-sm text-slate-800 truncate">{item.title || 'Link Externo'}</div>
                           <div className="text-xs text-slate-500 truncate">{item.url}</div>
                         </div>
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="p-2 text-slate-400 hover:text-brand-blue">
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="p-2 text-slate-400 hover:text-brand-blue" onClick={() => onAction?.('link')}>
                           <ExternalLink size={16} />
                         </a>
                       </div>

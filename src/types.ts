@@ -29,6 +29,7 @@ export interface CardAnalytics {
 
 export interface BusinessCard {
   id: string;
+  userId: string;
   active: boolean;
   name: string;
   role: string;

@@ -6,7 +6,7 @@ import Dashboard from '../components/Dashboard';
 import Editor from '../components/Editor';
 import CardPreview from '../components/CardPreview';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Layout, X, Share2, Download, Check, AlertCircle, Sun, Moon, Shield, LogOut, User as UserIcon } from 'lucide-react';
+import { Layout, X, Share2, Download, Check, AlertCircle, Sun, Moon, Shield, LogOut, User as UserIcon, BarChart2 } from 'lucide-react';
 import { DEVICES } from '../constants';
 import { Device } from '../types';
 import DeviceSelector from '../components/DeviceSelector';
@@ -379,8 +379,46 @@ const AppLayout: React.FC = () => {
                 </div>
               </div>
 
-              <div className="h-64 w-full bg-slate-50 rounded-3xl flex items-center justify-center border-2 border-dashed border-slate-200">
-                <p className="text-slate-400 font-medium">Gráfico de desempenho será exibido aqui com dados reais.</p>
+              {/* Simple Comparison Chart */}
+              <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100">
+                <h3 className="text-slate-800 font-bold mb-6 flex items-center gap-2">
+                  <BarChart2 size={20} className="text-slate-400" />
+                  Comparativo de Engajamento
+                </h3>
+                <div className="h-64 w-full flex items-end justify-around gap-4 px-4">
+                  {/* Views Bar */}
+                  <div className="flex flex-col items-center gap-2 w-full max-w-[100px] group">
+                    <div className="relative w-full bg-slate-200 rounded-t-2xl overflow-hidden shadow-sm" style={{ height: '200px' }}>
+                      <div
+                        className="absolute bottom-0 w-full bg-indigo-500 rounded-t-2xl transition-all duration-1000 ease-out group-hover:bg-indigo-600"
+                        style={{ height: `${Math.max(10, Math.min(100, (currentCard.analytics.views / (Math.max(currentCard.analytics.views, 10) * 1.2)) * 100))}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Views</span>
+                  </div>
+
+                  {/* WhatsApp Bar */}
+                  <div className="flex flex-col items-center gap-2 w-full max-w-[100px] group">
+                    <div className="relative w-full bg-slate-200 rounded-t-2xl overflow-hidden shadow-sm" style={{ height: '200px' }}>
+                      <div
+                        className="absolute bottom-0 w-full bg-green-500 rounded-t-2xl transition-all duration-1000 ease-out group-hover:bg-green-600 delay-100"
+                        style={{ height: `${Math.max(10, Math.min(100, (currentCard.analytics.whatsappClicks / (Math.max(currentCard.analytics.views, 10) * 1.2)) * 100))}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">WhatsApp</span>
+                  </div>
+
+                  {/* Links Bar */}
+                  <div className="flex flex-col items-center gap-2 w-full max-w-[100px] group">
+                    <div className="relative w-full bg-slate-200 rounded-t-2xl overflow-hidden shadow-sm" style={{ height: '200px' }}>
+                      <div
+                        className="absolute bottom-0 w-full bg-slate-800 rounded-t-2xl transition-all duration-1000 ease-out group-hover:bg-slate-900 delay-200"
+                        style={{ height: `${Math.max(10, Math.min(100, (currentCard.analytics.linkClicks / (Math.max(currentCard.analytics.views, 10) * 1.2)) * 100))}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Links</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
